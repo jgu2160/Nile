@@ -62,25 +62,24 @@ class Connector
     matched_entries = weather_file.map do |line|
       line.to_csv.delete("\n") if (Date.parse(date) - Date.parse(line["Date"])).abs <= 30
     end
-    p matched_entries
     matched_entries.delete(nil)
     matched_entries
   end
 
   def bounded?(test, against, day_diff)
-    against = against.map { |x| x.to_i}
+    against = against.map { |x| x.to_f }
     mosquito_travel_x = day_diff.to_i * LAT_CHANGE
     mosquito_travel_y = day_diff.to_i * LON_CHANGE
     bounds_x = [against[0] + mosquito_travel_x, against[0] - mosquito_travel_x]
     bounds_y = [against[1] + mosquito_travel_y, against[1] - mosquito_travel_y]
-    #p true if test[0] <= bounds_x[0] || test[0] >= bounds_x[1] && test[1] <= bounds_y[0] || test[1] >= bounds_y[1]
+    p test, against, day_diff.to_i if (test[0] >= bounds_x[0] || test[0] <= bounds_x[1]) && (test[1] >= bounds_y[0] || test[1] <= bounds_y[1])
   end
 
   def connect_sprays(date, lat, lon)
     spray_file.rewind
     matched_entries = spray_file.map do |line|
-      spray_lat = line["Latitude"].to_i
-      spray_lon = line["Longitude"].to_i
+      spray_lat = line["Latitude"].to_f
+      spray_lon = line["Longitude"].to_f
       day_diff = Date.parse(date) - Date.parse(line["Date"])
       if day_diff <= 30 && day_diff >= 0
         line.to_csv.delete("\n") if bounded?([spray_lat, spray_lon], [lat, lon], day_diff)
