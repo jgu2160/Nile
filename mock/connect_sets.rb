@@ -62,6 +62,7 @@ class Connector
     matched_entries = weather_file.map do |line|
       line.to_csv.delete("\n") if (Date.parse(date) - Date.parse(line["Date"])).abs <= 30
     end
+    p matched_entries
     matched_entries.delete(nil)
     matched_entries
   end
@@ -72,7 +73,7 @@ class Connector
     mosquito_travel_y = day_diff.to_i * LON_CHANGE
     bounds_x = [against[0] + mosquito_travel_x, against[0] - mosquito_travel_x]
     bounds_y = [against[1] + mosquito_travel_y, against[1] - mosquito_travel_y]
-    p true if test[0] <= bounds_x[0] || test[0] >= bounds_x[1] && test[1] <= bounds_y[0] || test[1] >= bounds_y[1]
+    #p true if test[0] <= bounds_x[0] || test[0] >= bounds_x[1] && test[1] <= bounds_y[0] || test[1] >= bounds_y[1]
   end
 
   def connect_sprays(date, lat, lon)
