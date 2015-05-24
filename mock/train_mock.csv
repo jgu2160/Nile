@@ -1,0 +1,5 @@
+"Date","Address","Species","Block","Street","Trap","AddressNumberAndStreet","Latitude","Longitude","AddressAccuracy","NumMosquitos","WnvPresent"
+2007-05-29,"4100 North Oak Park Avenue, Chicago, IL 60634, USA","CULEX PIPIENS/RESTUANS",41," N OAK PARK AVE","T002","4100  N OAK PARK AVE, Chicago, IL",41.95469,-87.800991,9,1,0
+2011-09-01,"6100 West Fullerton Avenue, Chicago, IL 60639, USA","CULEX RESTUANS",61," W FULLERTON AVE","T013","6100  W FULLERTON AVE, Chicago, IL",41.923738,-87.785288,9,3,0
+2011-09-23,"5100 West 72nd Street, Chicago, IL 60638, USA","CULEX PIPIENS",51," W 72ND ST","T035","5100  W 72ND ST, Chicago, IL",41.763733,-87.742302,8,1,0
+2013-08-22,"4200 West 65th Street, Chicago, IL 60621, USA","CULEX PIPIENS",42," W 65TH ST","T235","4200  W 65TH ST, Chicago, IL",41.776428,-87.627096,8,18,1
