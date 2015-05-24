@@ -6,8 +6,6 @@ class Connector
   WEATHER = "weather_mock.csv"
   OUT = "out.csv"
   attr_accessor :train_file, :weather_file, :spray_file, :out_file
-  #HEADERS =
-
 
   def connect
     delete_output_contents
@@ -16,19 +14,24 @@ class Connector
     @spray_file = CSV.open(SPRAY, headers: true)
     @out_file = CSV.open(OUT, "wb")
     make_header
-
-    #repository_file.rewind
-    #repo_objects = repository_file.map do |line|
-    #new_repo_object = class_name.new(self)
-    #repository_headers.each {|h| new_repo_object.info[h] = line[h]}
-    #new_repo_object
-    #end
-    #connect_weather
-    #connect_sprays
+    add_train
   end
 
   def delete_output_contents
     File.open(OUT, 'w') {|file| file.truncate(0) }
+  end
+
+  def add_train
+    CSV.read(TRAIN, headers: true).each do |line|
+      line["Address"] = nil
+      line["AddressNumberAndStreet"] = nil
+      CSV.open(OUT, "ab") do |csv|
+        new_line = line.to_csv
+        new_line.delete("\n")
+        csv_line = new_line + "," + connect_weather(line["Date"]).join(",")
+        csv << csv_line.split(",")
+      end
+    end
   end
 
   def make_header
@@ -36,7 +39,7 @@ class Connector
     weather_headers = weather_file.readline.headers
     spray_headers = spray_file.readline.headers
 
-    multiple_weather_headers = 1.upto(120).flat_map do |x|
+    multiple_weather_headers = 1.upto(122).flat_map do |x|
       weather_headers.map { |h| x.to_s + h }
     end
 
@@ -44,7 +47,7 @@ class Connector
       spray_headers.map { |h| x.to_s + h }
     end
 
-    out_file do |csv|
+    CSV.open(OUT, "wb") do |csv|
       csv << train_headers + multiple_weather_headers + multiple_spray_headers
     end
   end
@@ -53,13 +56,17 @@ class Connector
 
   end
 
-  def connect_weather
-    CSV.open(OUT, "wb") do |csv|
+  def connect_weather(date)
+    weather_file.rewind
+    matched_dates = weather_file.map do |line|
+      (line.to_csv.delete("\n")) if (Date.parse(date) - Date.parse(line["Date"])).abs <= 30
     end
+    matched_dates.delete(nil)
+    matched_dates
   end
 
-  def connect_sprays
-
+  def connect_sprays(date)
+    spray_file.rewind
   end
 
 end
