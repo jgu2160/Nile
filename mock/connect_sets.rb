@@ -7,6 +7,7 @@ class Connector
   OUT = "out.csv"
   LAT_CHANGE = 0.0435
   LON_CHANGE = 0.0566
+
   attr_accessor :train_file, :weather_file, :spray_file, :out_file
 
   def connect
@@ -21,6 +22,26 @@ class Connector
 
   def delete_output_contents
     File.open(OUT, 'w') {|file| file.truncate(0) }
+  end
+
+  def make_header
+    puts "Making headers..."
+    train_headers = train_file.readline.headers
+    weather_headers = weather_file.readline.headers
+    spray_headers = spray_file.readline.headers
+
+    multiple_weather_headers = 1.upto(122).flat_map do |x|
+      weather_headers.map { |h| x.to_s + h }
+    end
+
+    multiple_spray_headers = 1.upto(30).flat_map do |x|
+      spray_headers.map { |h| x.to_s + h }
+    end
+
+    CSV.open(OUT, "wb") do |csv|
+      csv << train_headers + multiple_weather_headers + multiple_spray_headers
+    end
+    puts "Done."
   end
 
   def combine_data
@@ -39,43 +60,34 @@ class Connector
     end
   end
 
-  def make_header
-    train_headers = train_file.readline.headers
-    weather_headers = weather_file.readline.headers
-    spray_headers = spray_file.readline.headers
-
-    multiple_weather_headers = 1.upto(122).flat_map do |x|
-      weather_headers.map { |h| x.to_s + h }
-    end
-
-    multiple_spray_headers = 1.upto(30).flat_map do |x|
-      spray_headers.map { |h| x.to_s + h }
-    end
-
-    CSV.open(OUT, "wb") do |csv|
-      csv << train_headers + multiple_weather_headers + multiple_spray_headers
-    end
-  end
-
   def connect_weather(date)
+    puts "Connecting weather data to #{date}..."
     weather_file.rewind
     matched_entries = weather_file.map do |line|
       line.to_csv.delete("\n") if (Date.parse(date) - Date.parse(line["Date"])).abs <= 30
     end
     matched_entries.delete(nil)
+    length = matched_entries.length
+    if length != 122
+      n = 122 - length
+      repeater = [" "].cycle(n * 22).to_a
+      puts "Done."
+      return matched_entries + repeater
+    end
+    puts "Done."
     matched_entries
   end
 
   def bounded?(test, against, day_diff)
     against = against.map { |x| x.to_f }
-    mosquito_travel_x = day_diff.to_i * LAT_CHANGE
-    mosquito_travel_y = day_diff.to_i * LON_CHANGE
-    bounds_x = [against[0] + mosquito_travel_x, against[0] - mosquito_travel_x]
-    bounds_y = [against[1] + mosquito_travel_y, against[1] - mosquito_travel_y]
-    p test, against, day_diff.to_i if (test[0] >= bounds_x[0] || test[0] <= bounds_x[1]) && (test[1] >= bounds_y[0] || test[1] <= bounds_y[1])
+    mosquito_travel_x, mosquito_travel_y = [day_diff.to_i * LAT_CHANGE, day_diff.to_i * LON_CHANGE]
+    bounds_x = [against[0] - mosquito_travel_x, against[0] + mosquito_travel_x]
+    bounds_y = [against[1] - mosquito_travel_y, against[1] + mosquito_travel_y]
+    true if (test[0] >= bounds_x[0] && test[0] <= bounds_x[1]) && (test[1] >= bounds_y[0] && test[1] <= bounds_y[1])
   end
 
   def connect_sprays(date, lat, lon)
+    puts "Connecting spray data to #{date}..."
     spray_file.rewind
     matched_entries = spray_file.map do |line|
       spray_lat = line["Latitude"].to_f
@@ -86,6 +98,7 @@ class Connector
       end
     end
     matched_entries.delete(nil)
+    puts "Done."
     matched_entries
   end
 
