@@ -1,6 +1,6 @@
 # Nile
 Run
-`terminal
+`
 ruby connect_sets.rb
 `
 to fill 'out.csv' with the training data plus relevant weather and spray data.
